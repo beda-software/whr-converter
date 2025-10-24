@@ -17,7 +17,7 @@ jobs:
       with:
         python-version: 3.13
     - run: pip install poetry
-    - run: potery install
+    - run: poetry install
     - run: poetry run build
     - uses: actions/upload-artifact@v4
       with:
