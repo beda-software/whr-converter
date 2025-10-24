@@ -11,16 +11,15 @@ jobs:
         - windows-latest
         - ubuntu-latest
         - macos-latest
-
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
+    - uses: actions/checkout@v5
+    - uses: actions/setup-python@v6
       with:
         python-version: 3.13
     - run: pip install poetry
     - run: potery install
     - run: poetry run build
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
+        name: ${{ matrix.os }}-binaries
         path: dist/*
-
