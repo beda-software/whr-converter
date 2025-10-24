@@ -1,3 +1,4 @@
+import os
 import sys
 from PySide6.QtCore import Qt, QDate
 from PySide6.QtWidgets import (
@@ -17,13 +18,11 @@ from PySide6.QtWidgets import (
 from PySide6.QtGui import QFont
 from whr_converter.medirecords_client import MedirecordsProprietaryClient
 
-whr_practice_id = os.environ['PRACTICE_ID']
-
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.medirecords = MedirecordsProprietaryClient(whr_practice_id)
+        self.medirecords = MedirecordsProprietaryClient(os.environ["PRACTICE_ID"])
         self.appointment_types = {
             t["id"]: t["name"] for t in self.medirecords.get_appointment_types()["data"]
         }
