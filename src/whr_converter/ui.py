@@ -199,6 +199,7 @@ class MainWindow(QMainWindow):
 
         # Store selected date
         self.set_today()
+        self.on_date_changed()
 
     def on_date_changed(self):
         """Handle date selection change"""
