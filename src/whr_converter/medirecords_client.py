@@ -19,7 +19,7 @@ class MedirecordsProprietaryClient:
     various endpoints of the Medirecords API.
     """
 
-    def __init__(self, practice_id: str, access_token: Optional[str] = None):
+    def __init__(self, practice_id: str, access_token: Optional[str]):
         """
         Initialize the MedirecordsProprietaryClient.
 
@@ -28,12 +28,7 @@ class MedirecordsProprietaryClient:
             access_token: API access token. If not provided, will use ACCESS_TOKEN env var
         """
         self.practice_id = practice_id
-        self.access_token = access_token or os.environ.get("ACCESS_TOKEN")
-
-        if not self.access_token:
-            raise ValueError(
-                "Access token must be provided either as parameter or ACCESS_TOKEN environment variable"
-            )
+        self.access_token = access_token
 
         # Initialize requests session with authentication
         self.session = requests.Session()

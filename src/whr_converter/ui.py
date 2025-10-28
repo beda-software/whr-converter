@@ -1,5 +1,6 @@
-import os
 import sys
+from fhirpy import SyncFHIRClient
+from pathlib import Path
 from PySide6.QtCore import Qt, QDate
 from PySide6.QtWidgets import (
     QApplication,
@@ -17,12 +18,21 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtGui import QFont
 from whr_converter.medirecords_client import MedirecordsProprietaryClient
+from whr_converter.config import config
+from whr_converter.fhir_to_hl7 import FHIRToHL7Converter
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.medirecords = MedirecordsProprietaryClient(os.environ["PRACTICE_ID"])
+        self.medirecords = MedirecordsProprietaryClient(
+            config["PRACTICE_ID"], config["ACCESS_TOKEN"]
+        )
+        self.fhir = SyncFHIRClient(
+            "https://api.medirecords.com/fhir/v1",
+            authorization=config["FHIR_ACCESS_TOKEN"],
+        )
+        self.converter = FHIRToHL7Converter()
         self.appointment_types = {
             t["id"]: t["name"] for t in self.medirecords.get_appointment_types()["data"]
         }
@@ -247,12 +257,23 @@ class MainWindow(QMainWindow):
 
         # Create confirmation message
         date_str = selected_date.toString("yyyy-MM-dd")
-        names_str = ", ".join([str(patient_id) for patient_id in selected_data])
+        patients = [
+            self.fhir.reference("Patient", patient_id).to_resource()
+            for patient_id in selected_data
+        ]
+
+        for patient in patients:
+            hl7_message = self.converter.convert_patient(patient)
+
+            with open(
+                Path(config["OUTPUT_DIR"]) / f"{patient.id}.hl7", "w", encoding="utf-8"
+            ) as f:
+                f.write(hl7_message)
 
         msg = QMessageBox()
         msg.setWindowTitle("Synchronization Confirmation")
         msg.setText("Synchronize data for the following:")
-        msg.setInformativeText(f"Date: {date_str}\nSelected: {names_str}")
+        msg.setInformativeText(f"Date: {date_str}\nSelected: {len(patients)}")
         msg.setStandardButtons(
             QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel
         )
